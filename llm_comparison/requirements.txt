@@ -1,0 +1,13 @@
+argparse==1.4.0
+certifi==2023.6.15
+chardet==5.1.0
+Flask==2.3.2
+idna==3.4
+langchain==0.0.1
+langchain-community==0.0.1
+langchain-schema==0.0.1
+langdetect==1.0.9
+numpy==1.25.0
+PyPDF2==3.0.1
+requests==2.31.0
+urllib3==2.0.3
