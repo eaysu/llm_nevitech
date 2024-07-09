@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Question Answering</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Question Answering</h1>
+        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="form">
+            <label for="file">Upload PDF:</label>
+            <input type="file" name="file" id="file" class="input-file">
+            <button type="submit" class="button">Upload</button>
+        </form>
+
+        <form action="{{ url_for('query') }}" method="post" class="form">
+            <label for="question">Your Question:</label>
+            <input type="text" name="question" id="question" class="input-text" required>
+            
+            <label for="model">Choose Language Model:</label>
+            <select name="model" id="model" class="input-select">
+                {% for model in models %}
+                <option value="{{ model }}">{{ model }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="button">Run</button>
+        </form>
+
+        {% if response %}
+        <div class="response-container">
+            <h2>Response:</h2>
+            <p>{{ response }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
