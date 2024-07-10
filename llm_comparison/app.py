@@ -19,7 +19,10 @@ CHROMA_PATH = "chroma"
 LANGUAGE_MODELS = {
     'gemma2': 'gemma2',
     'llama3': 'llama3',
-    'mistral': 'mistral'
+    'mistral': 'mistral',
+    'gemma2:27b': 'gemma2:27b',
+    'llama3:70b': 'llama3:70b',
+    'curiositytech/MARS': 'curiositytech/MARS'
 }
 
 @app.route('/')

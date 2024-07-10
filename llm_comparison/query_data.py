@@ -1,11 +1,14 @@
 import argparse
 import time
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from langchain.vectorstores.chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
 from langdetect import detect
 
 from get_embedding_function import get_embedding_function
+
+ollama_language_models = ["mistral", "llama3", "gemma2", "llama3:27b", "gemma2:70b"]
 
 CHROMA_PATH = "chroma"
 
@@ -107,8 +110,16 @@ def query_rag(query_text: str, language_model: str):
     prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
-    model = Ollama(model=language_model)
-    response_text = model.invoke(prompt)
+    if language_model in ollama_language_models:
+        model = Ollama(model=language_model)
+        response_text = model.invoke(prompt)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(language_model)
+        model = AutoModelForCausalLM.from_pretrained(language_model)
+
+        inputs = tokenizer(prompt, return_tensors="pt")
+        outputs = model.generate(**inputs)
+        response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
