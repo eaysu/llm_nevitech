@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for, send_from_
 import os
 import time
 from werkzeug.utils import secure_filename
-from langchain.vectorstores.chroma import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
 from langdetect import detect
