@@ -72,86 +72,22 @@ Rispondi alla domanda basandoti solo sul contesto seguente:
 Rispondi alla domanda basandoti sul contesto sopra: {question}
 """
 
-PROMPT_TEMPLATE_LLAMA3_EN = """
-<s> system
-You are a helpful AI assistant to answer the question according to context with English.
-</s> user
-{question}
-</s> assistant
-"""
-
-PROMPT_TEMPLATE_LLAMA3_TR = """
-<s> system
-Soruyu Türkçe bağlama göre yanıtlayan yardımcı bir yapay zeka asistanısınız.
-</s> user
-{question}
-</s> assistant
-"""
-
-PROMPT_TEMPLATE_LLAMA3_FR = """
-<s> system
-Vous êtes un assistant IA utile pour répondre à la question en fonction du contexte avec le français.
-</s> user
-{question}
-</s> assistant
-"""
-
-PROMPT_TEMPLATE_LLAMA3_ES = """
-<s> system
-Eres un útil asistente de IA para responder la pregunta según el contexto en español.
-</s> user
-{question}
-</s> assistant
-"""
-
-PROMPT_TEMPLATE_LLAMA3_DE = """
-<s> system
-Sie sind ein hilfreicher KI-Assistent, um die Frage kontextbezogen mit Deutsch zu beantworten.
-</s> user
-{question}
-</s> assistant
-"""
-
-PROMPT_TEMPLATE_LLAMA3_IT = """
-<s> system
-Sei un utile assistente AI per rispondere alla domanda in base al contesto con l'italiano.
-</s> user
-{question}
-</s> assistant
-"""
-
 def select_prompt_template(query_text: str, language_model: str) -> str:
     lang = detect(query_text)
-    if language_model == "llama3" or language_model == "llama3:27b":
-        if lang == 'en':
-            return PROMPT_TEMPLATE_LLAMA3_EN
-        elif lang == 'tr':
-            return PROMPT_TEMPLATE_LLAMA3_TR
-        elif lang == 'fr':
-            return PROMPT_TEMPLATE_LLAMA3_FR
-        elif lang == 'es':
-            return PROMPT_TEMPLATE_LLAMA3_ES
-        elif lang == 'de':
-            return PROMPT_TEMPLATE_LLAMA3_DE
-        elif lang == 'it':
-            return PROMPT_TEMPLATE_LLAMA3_IT
-        else:
-            return PROMPT_TEMPLATE_LLAMA3_EN # Default to English if language is not recognized
-    else:    
-        if lang == 'en':
-            return PROMPT_TEMPLATE_EN
-        elif lang == 'tr':
-            return PROMPT_TEMPLATE_TR
-        elif lang == 'fr':
-            return PROMPT_TEMPLATE_FR
-        elif lang == 'es':
-            return PROMPT_TEMPLATE_ES
-        elif lang == 'de':
-            return PROMPT_TEMPLATE_DE
-        elif lang == 'it':
-            return PROMPT_TEMPLATE_IT
-        else:
-            return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
+    if lang == 'en':
+        return PROMPT_TEMPLATE_EN
+    elif lang == 'tr':
+        return PROMPT_TEMPLATE_TR
+    elif lang == 'fr':
+        return PROMPT_TEMPLATE_FR
+    elif lang == 'es':
+        return PROMPT_TEMPLATE_ES
+    elif lang == 'de':
+        return PROMPT_TEMPLATE_DE
+    elif lang == 'it':
+        return PROMPT_TEMPLATE_IT
+    else:
+        return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
 
 def main():
     parser = argparse.ArgumentParser()
