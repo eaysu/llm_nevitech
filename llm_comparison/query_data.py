@@ -74,7 +74,7 @@ Rispondi alla domanda basandoti sul contesto sopra: {question}
 
 PROMPT_TEMPLATE_LLAMA3_EN = """
 <s> system
-You are a helpful AI assistant.
+You are a helpful AI assistant to answer the question according to context with English.
 </s> user
 {question}
 </s> assistant
@@ -82,7 +82,7 @@ You are a helpful AI assistant.
 
 PROMPT_TEMPLATE_LLAMA3_TR = """
 <s> system
-Siz yararlı bir yapay zeka asistanısınız.
+Soruyu Türkçe bağlama göre yanıtlayan yardımcı bir yapay zeka asistanısınız.
 </s> user
 {question}
 </s> assistant
@@ -90,7 +90,7 @@ Siz yararlı bir yapay zeka asistanısınız.
 
 PROMPT_TEMPLATE_LLAMA3_FR = """
 <s> system
-Vous êtes un assistant IA utile.
+Vous êtes un assistant IA utile pour répondre à la question en fonction du contexte avec le français.
 </s> user
 {question}
 </s> assistant
@@ -98,7 +98,7 @@ Vous êtes un assistant IA utile.
 
 PROMPT_TEMPLATE_LLAMA3_ES = """
 <s> system
-Eres un asistente de IA útil.
+Eres un útil asistente de IA para responder la pregunta según el contexto en español.
 </s> user
 {question}
 </s> assistant
@@ -106,7 +106,7 @@ Eres un asistente de IA útil.
 
 PROMPT_TEMPLATE_LLAMA3_DE = """
 <s> system
-Sie sind ein hilfreicher KI-Assistent.
+Sie sind ein hilfreicher KI-Assistent, um die Frage kontextbezogen mit Deutsch zu beantworten.
 </s> user
 {question}
 </s> assistant
@@ -114,7 +114,7 @@ Sie sind ein hilfreicher KI-Assistent.
 
 PROMPT_TEMPLATE_LLAMA3_IT = """
 <s> system
-Sei un assistente IA utile.
+Sei un utile assistente AI per rispondere alla domanda in base al contesto con l'italiano.
 </s> user
 {question}
 </s> assistant
