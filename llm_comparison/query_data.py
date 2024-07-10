@@ -72,22 +72,86 @@ Rispondi alla domanda basandoti solo sul contesto seguente:
 Rispondi alla domanda basandoti sul contesto sopra: {question}
 """
 
-def select_prompt_template(query_text: str) -> str:
+PROMPT_TEMPLATE_LLAMA3_EN = """
+<s> system
+You are a helpful AI assistant.
+</s> user
+{question}
+</s> assistant
+"""
+
+PROMPT_TEMPLATE_LLAMA3_TR = """
+<s> system
+Siz yararlı bir yapay zeka asistanısınız.
+</s> user
+{question}
+</s> assistant
+"""
+
+PROMPT_TEMPLATE_LLAMA3_FR = """
+<s> system
+Vous êtes un assistant IA utile.
+</s> user
+{question}
+</s> assistant
+"""
+
+PROMPT_TEMPLATE_LLAMA3_ES = """
+<s> system
+Eres un asistente de IA útil.
+</s> user
+{question}
+</s> assistant
+"""
+
+PROMPT_TEMPLATE_LLAMA3_DE = """
+<s> system
+Sie sind ein hilfreicher KI-Assistent.
+</s> user
+{question}
+</s> assistant
+"""
+
+PROMPT_TEMPLATE_LLAMA3_IT = """
+<s> system
+Sei un assistente IA utile.
+</s> user
+{question}
+</s> assistant
+"""
+
+def select_prompt_template(query_text: str, language_model: str) -> str:
     lang = detect(query_text)
-    if lang == 'en':
-        return PROMPT_TEMPLATE_EN
-    elif lang == 'tr':
-        return PROMPT_TEMPLATE_TR
-    elif lang == 'fr':
-        return PROMPT_TEMPLATE_FR
-    elif lang == 'es':
-        return PROMPT_TEMPLATE_ES
-    elif lang == 'de':
-        return PROMPT_TEMPLATE_DE
-    elif lang == 'it':
-        return PROMPT_TEMPLATE_IT
-    else:
-        return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
+    if language_model == "llama3" or language_model == "llama3:27b":
+        if lang == 'en':
+            return PROMPT_TEMPLATE_LLAMA3_EN
+        elif lang == 'tr':
+            return PROMPT_TEMPLATE_LLAMA3_TR
+        elif lang == 'fr':
+            return PROMPT_TEMPLATE_LLAMA3_FR
+        elif lang == 'es':
+            return PROMPT_TEMPLATE_LLAMA3_ES
+        elif lang == 'de':
+            return PROMPT_TEMPLATE_LLAMA3_DE
+        elif lang == 'it':
+            return PROMPT_TEMPLATE_LLAMA3_IT
+        else:
+            return PROMPT_TEMPLATE_LLAMA3_EN # Default to English if language is not recognized
+    else:    
+        if lang == 'en':
+            return PROMPT_TEMPLATE_EN
+        elif lang == 'tr':
+            return PROMPT_TEMPLATE_TR
+        elif lang == 'fr':
+            return PROMPT_TEMPLATE_FR
+        elif lang == 'es':
+            return PROMPT_TEMPLATE_ES
+        elif lang == 'de':
+            return PROMPT_TEMPLATE_DE
+        elif lang == 'it':
+            return PROMPT_TEMPLATE_IT
+        else:
+            return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
 
 def main():
     parser = argparse.ArgumentParser()
@@ -106,7 +170,7 @@ def query_rag(query_text: str, language_model: str):
     results = db.similarity_search_with_score(query_text, k=5)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    prompt_template_str = select_prompt_template(query_text)
+    prompt_template_str = select_prompt_template(query_text, language_model)
     prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
@@ -125,7 +189,7 @@ def query_rag(query_text: str, language_model: str):
     elapsed_time = end_time - start_time
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Yanıt: {response_text}\nKaynaklar: {sources}\nSüre: {elapsed_time:.2f} saniye"
+    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nKaynaklar: {sources}\nSüre: {elapsed_time:.2f} saniye\n"
     print(formatted_response)
     return response_text
 
