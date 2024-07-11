@@ -124,8 +124,10 @@ def query_rag(query_text: str, language_model: str):
     end_time = time.time()
     elapsed_time = end_time - start_time
 
-    sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nKaynaklar: {sources}\nSüre: {elapsed_time:.2f} saniye\n"
+    sources = [{"id": doc.metadata.get("id", None), "content": doc.page_content} for doc, _score in results]
+    formatted_sources = "\n".join([f"{source['id']}: {source['content']}" for source in sources])
+    
+    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nKaynaklar:\n{formatted_sources}\nSüre: {elapsed_time:.2f} saniye\n"
     print(formatted_response)
     return response_text
 
