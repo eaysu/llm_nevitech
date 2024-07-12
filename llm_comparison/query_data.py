@@ -118,7 +118,7 @@ def query_rag(query_text: str, language_model: str):
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
         inputs = tokenizer(prompt, return_tensors="pt")
-        outputs = model.generate(**inputs)
+        outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
         response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     end_time = time.time()
