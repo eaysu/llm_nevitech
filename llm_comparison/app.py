@@ -20,9 +20,14 @@ LANGUAGE_MODELS = {
     'gemma2': 'gemma2',
     'llama3': 'llama3',
     'mistral': 'mistral',
+    'qwen2:7b': 'qwen2:7b',
     'gemma2:27b': 'gemma2:27b',
     'llama3:70b': 'llama3:70b',
-    'curiositytech/MARS': 'curiositytech/MARS'
+    'qwen2:72b': 'qwen2:72b',
+    'curiositytech/MARS': 'curiositytech/MARS',
+    'TURKCELL/Turkcell-LLM-7b-v1': 'TURKCELL/Turkcell-LLM-7b-v1',
+    'Trendyol/Trendyol-LLM-7b-chat-dpo-v1.0': 'Trendyol/Trendyol-LLM-7b-chat-dpo-v1.0',
+    'Orbina/Orbita-v0.1': 'Orbina/Orbita-v0.1'
 }
 
 @app.route('/')

@@ -8,7 +8,7 @@ from langdetect import detect
 
 from get_embedding_function import get_embedding_function
 
-ollama_language_models = ["mistral", "llama3", "gemma2", "llama3:27b", "gemma2:70b"]
+ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b"]
 
 CHROMA_PATH = "chroma"
 
