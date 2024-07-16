@@ -79,13 +79,13 @@ def select_message_template(query_text: str, context_text: str ) -> str:
     lang_for_tr_llm = detect(query_text)
     if lang_for_tr_llm == 'tr':    
         messages = [
-            {"role": "system", "content": "Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context_text}"},
-            {"role": "user", "content": "Yukarıdaki bağlama dayanarak soruyu cevaplayın: {query_text}"}
+            {"role": "system", "content": f"Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context_text}"},
+            {"role": "user", "content": f"Yukarıdaki bağlama dayanarak soruyu cevaplayın: {query_text}"}
         ]  
     else:
         messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context_text}"},
-            {"role": "user", "content": "Answer the question based only on the following context: {query_text}"}
+            {"role": "system", "content": f"You are a helpful chatbot who always responds friendly: {context_text}"},
+            {"role": "user", "content": f"Answer the question based only on the following context: {query_text}"}
         ]
     return messages    
 
@@ -118,7 +118,8 @@ def query_rag(query_text: str, language_model: str):
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
 
         input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt")
-        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
+        attention_mask = (input_ids != tokenizer.pad_token_id).long()  # Ensure attention mask is set
+        outputs = model.generate(input_ids, attention_mask=attention_mask, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
         print(response_text)
@@ -132,7 +133,8 @@ def query_rag(query_text: str, language_model: str):
         text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         model_inputs = tokenizer([text], return_tensors="pt").to(device)
 
-        generated_ids = model.generate(model_inputs.input_ids, temperature=0.3, top_k=50, top_p=0.9, max_new_tokens=512, repetition_penalty=1,)
+        attention_mask = (model_inputs.input_ids != tokenizer.pad_token_id).long()  # Ensure attention mask is set
+        generated_ids = model.generate(model_inputs.input_ids, attention_mask=attention_mask, temperature=0.3, top_k=50, top_p=0.9, max_new_tokens=512, repetition_penalty=1,)
         generated_ids = [
             output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
@@ -153,4 +155,5 @@ def query_rag(query_text: str, language_model: str):
     print(formatted_response)
     return response_text
 
-
+if __name__ == "__main__":
+    main()
