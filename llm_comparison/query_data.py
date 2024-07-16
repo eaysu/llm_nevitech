@@ -17,42 +17,48 @@ qwen2_language_models = ["Orbina/Orbita-v0.1"]
 CHROMA_PATH = "chroma"
 
 PROMPT_TEMPLATE_EN = """
-Answer the question based only on the following context: {context}
+Answer the question based only on the following context: 
+{context}
 ---
 Answer the question based on the above context: {question}
 """
 
 PROMPT_TEMPLATE_TR = """
-Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context}
+Aşağıdaki bağlama dayanarak soruyu cevaplayın: 
+{context}
 ---
 Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}
 """
 
 PROMPT_TEMPLATE_FR = """
-Répondez à la question en vous basant uniquement sur le contexte suivant: {context}
+Répondez à la question en vous basant uniquement sur le contexte suivant: 
+{context}
 ---
 Répondez à la question en vous basant sur le contexte ci-dessus: {question}
 """
 
 PROMPT_TEMPLATE_ES = """
-Responda a la pregunta basándose únicamente en el siguiente contexto: {context}
+Responda a la pregunta basándose únicamente en el siguiente contexto: 
+{context}
 ---
 Responda a la pregunta basándose en el contexto anterior: {question}
 """
 
 PROMPT_TEMPLATE_DE = """
-Beantworten Sie die Frage nur anhand des folgenden Kontexts: {context}
+Beantworten Sie die Frage nur anhand des folgenden Kontexts: 
+{context}
 ---
 Beantworten Sie die Frage anhand des obigen Kontexts: {question}
 """
 
 PROMPT_TEMPLATE_IT = """
-Rispondi alla domanda basandoti solo sul contesto seguente: {context}
+Rispondi alla domanda basandoti solo sul contesto seguente: 
+{context}
 ---
 Rispondi alla domanda basandoti sul contesto sopra: {question}
 """
 
-def select_prompt_template(query_text: str, language_model: str) -> str:
+def select_prompt_template(query_text: str) -> str:
     lang = detect(query_text)
     if lang == 'en':
         return PROMPT_TEMPLATE_EN
@@ -69,22 +75,22 @@ def select_prompt_template(query_text: str, language_model: str) -> str:
     else:
         return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
     
-def select_message_template(query_text: str, prompt: str) -> str:
+def select_message_template(query_text: str) -> str:
     lang_for_tr_llm = detect(query_text)
     if lang_for_tr_llm == 'en':
         messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
+            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
         ]
     elif lang_for_tr_llm == 'tr':    
         messages = [
-            {"role": "system", "content": "Sen Türkçe konuşan bir chatbotsun."},
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": "Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context}"},
+            {"role": "user", "content": "Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}"}
         ]  
     else:
         messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
+            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
         ]
     return messages    
 
@@ -95,7 +101,6 @@ def main():
     query_text = args.query_text
     query_rag(query_text)
 
-
 def query_rag(query_text: str, language_model: str):
     start_time = time.time()
 
@@ -103,45 +108,27 @@ def query_rag(query_text: str, language_model: str):
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
     results = db.similarity_search_with_score(query_text, k=5)
-
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    prompt_template_str = select_prompt_template(query_text, language_model)
-    prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
-    prompt = prompt_template.format(context=context_text, question=query_text)
 
     if language_model in ollama_language_models:
+        prompt_template_str = select_prompt_template(query_text)
+        prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
+        prompt = prompt_template.format(context=context_text, question=query_text)
         model = Ollama(model=language_model)
         response_text = model.invoke(prompt)
 
     elif language_model == "Eurdem/Defne_llama3_2x8B":
+        prompt_template_str = select_message_template(query_text)
+        prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
+        prompt = prompt_template.format(context=context_text, question=query_text)
+
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
 
-        messages = [
-            {"role": "system", "content": "You are a helpful chatbot, named Defne, who always responds friendly."},
-            {"role": "user", "content": prompt}
-        ]
-
-        # Tokenize the input messages
-        try:
-            inputs = tokenizer.apply_chat_template(messages, return_tensors="pt", padding=True)
-            inputs = inputs.to("cuda")
-            attention_mask = inputs['attention_mask'].to("cuda")
-        except Exception as e:
-            print(f"Error during tokenization: {e}")
-            return
-
-        # Check the shape of the input tensor
-        print(f"Input tensor shape: {inputs['input_ids'].shape}")
-
-        # Generate the response
-        try:
-            outputs = model.generate(inputs['input_ids'], attention_mask=attention_mask, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500, pad_token_id=tokenizer.eos_token_id)
-            response = outputs[0][inputs['input_ids'].shape[-1]:]
-            response_text = tokenizer.decode(response, skip_special_tokens=True)
-        except Exception as e:
-            print(f"Error during model generation: {e}")
-            return
+        input_ids = tokenizer.apply_chat_template(prompt, return_tensors="pt")
+        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
+        response = outputs[0][input_ids.shape[-1]:]
+        print(tokenizer.decode(response, skip_special_tokens=True))
 
     """inputs = tokenizer(messages, return_tensors="pt")
     outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
