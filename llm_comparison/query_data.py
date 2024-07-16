@@ -115,8 +115,9 @@ def query_rag(query_text: str, language_model: str):
 
     elif language_model == "Eurdem/Defne_llama3_2x8B":
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
-
+        # Disable 8-bit quantization for debugging
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
+        
         messages = [
             {"role": "system", "content": "You are a helpful chatbot, named Defne, who always responds friendly."},
             {"role": "user", "content": prompt}
@@ -124,13 +125,15 @@ def query_rag(query_text: str, language_model: str):
 
         # Tokenize the input messages
         try:
-            input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+            input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt")
+            print(f"Input tensor shape: {input_ids.shape}")
         except Exception as e:
             print(f"Error during tokenization: {e}")
             return
 
-        # Check the shape of the input tensor
-        print(f"Input tensor shape: {input_ids.shape}")
+        # Try running on CPU for debugging
+        input_ids = input_ids.to("cpu")
+        model.to("cpu")
 
         # Generate the response
         try:
