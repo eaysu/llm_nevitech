@@ -115,9 +115,8 @@ def query_rag(query_text: str, language_model: str):
 
     elif language_model == "Eurdem/Defne_llama3_2x8B":
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        # Disable 8-bit quantization for debugging
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
-        
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
+
         messages = [
             {"role": "system", "content": "You are a helpful chatbot, named Defne, who always responds friendly."},
             {"role": "user", "content": prompt}
@@ -125,20 +124,20 @@ def query_rag(query_text: str, language_model: str):
 
         # Tokenize the input messages
         try:
-            input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt")
-            print(f"Input tensor shape: {input_ids.shape}")
+            inputs = tokenizer.apply_chat_template(messages, return_tensors="pt", padding=True)
+            inputs = inputs.to("cuda")
+            attention_mask = inputs['attention_mask'].to("cuda")
         except Exception as e:
             print(f"Error during tokenization: {e}")
             return
 
-        # Try running on CPU for debugging
-        input_ids = input_ids.to("cpu")
-        model.to("cpu")
+        # Check the shape of the input tensor
+        print(f"Input tensor shape: {inputs['input_ids'].shape}")
 
         # Generate the response
         try:
-            outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
-            response = outputs[0][input_ids.shape[-1]:]
+            outputs = model.generate(inputs['input_ids'], attention_mask=attention_mask, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500, pad_token_id=tokenizer.eos_token_id)
+            response = outputs[0][inputs['input_ids'].shape[-1]:]
             response_text = tokenizer.decode(response, skip_special_tokens=True)
         except Exception as e:
             print(f"Error during model generation: {e}")
