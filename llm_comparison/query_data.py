@@ -9,6 +9,9 @@ from langdetect import detect
 from get_embedding_function import get_embedding_function
 
 ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b"]
+llama_language_models = ["curiositytech/MARS", "Eurdem/Defne_llama3_2x8B", "Metin/LLaMA-3-8B-Instruct-TR-DPO", "ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1", "meta-llama/Meta-Llama-3-8B-Instruct"]
+mistral_language_models = ["Eurdem/megatron_1.1_MoE_2x7B"]
+qwen2_language_models = ["Orbina/Orbita-v0.1"]
 
 CHROMA_PATH = "chroma"
 
@@ -110,10 +113,16 @@ def query_rag(query_text: str, language_model: str):
                 {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
                 {"role": "user", "content": prompt}
             ]
+    
+        if language_model in llama_language_models:
+            input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+            outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
+            response = outputs[0][input_ids.shape[-1]:]
+            response_text = tokenizer.decode(response, skip_special_tokens=True)
 
-        inputs = tokenizer(messages, return_tensors="pt")
+        """inputs = tokenizer(messages, return_tensors="pt")
         outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
-        response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)"""
 
     end_time = time.time()
     elapsed_time = end_time - start_time

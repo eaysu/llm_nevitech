@@ -25,14 +25,12 @@ LANGUAGE_MODELS = {
     'llama3:70b': 'llama3:70b',
     'qwen2:72b': 'qwen2:72b',
     'curiositytech/MARS': 'curiositytech/MARS',
-    'TURKCELL/Turkcell-LLM-7b-v1': 'TURKCELL/Turkcell-LLM-7b-v1',
-    'Trendyol/Trendyol-LLM-7b-chat-dpo-v1.0': 'Trendyol/Trendyol-LLM-7b-chat-dpo-v1.0',
     'Orbina/Orbita-v0.1': 'Orbina/Orbita-v0.1',
     'Eurdem/Defne_llama3_2x8B': 'Eurdem/Defne_llama3_2x8B',
     'Metin/LLaMA-3-8B-Instruct-TR-DPO': 'Metin/LLaMA-3-8B-Instruct-TR-DPO',
-    'ytu-ce-cosmos/Turkish-Llama-8b-v0.1': 'ytu-ce-cosmos/Turkish-Llama-8b-v0.1',
     'ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1': 'ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1',
-    'meta-llama/Meta-Llama-3-8B-Instruct': 'meta-llama/Meta-Llama-3-8B-Instruct'
+    'meta-llama/Meta-Llama-3-8B-Instruct': 'meta-llama/Meta-Llama-3-8B-Instruct',
+    'Eurdem/megatron_1.1_MoE_2x7B': 'Eurdem/megatron_1.1_MoE_2x7B'
 }
 
 @app.route('/')
