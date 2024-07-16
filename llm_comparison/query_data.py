@@ -112,6 +112,7 @@ def query_rag(query_text: str, language_model: str):
     if language_model in ollama_language_models:
         model = Ollama(model=language_model)
         response_text = model.invoke(prompt)
+
     elif language_model == "curiositytech/MARS":
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto",)
@@ -135,7 +136,21 @@ def query_rag(query_text: str, language_model: str):
         )
 
         response = outputs[0][input_ids.shape[-1]:]
-        response_text = tokenizer.decode(response, skip_special_tokens=True)   
+        response_text = tokenizer.decode(response, skip_special_tokens=True)
+    elif language_model == "Eurdem/Defne_llama3_2x8B":
+        tokenizer = AutoTokenizer.from_pretrained(language_model)
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
+
+        messages = [
+            {"role": "system", "content": "Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "user", "content": "{query_text}"},
+        ]
+
+        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
+        response = outputs[0][input_ids.shape[-1]:]
+        response_text = tokenizer.decode(response, skip_special_tokens=True)
+        
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
