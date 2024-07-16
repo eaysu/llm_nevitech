@@ -115,9 +115,9 @@ def query_rag(query_text: str, language_model: str):
     elif language_model == "Eurdem/Defne_llama3_2x8B":
         messages = select_message_template(query_text, context_text)
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
 
-        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt")
+        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
         attention_mask = (input_ids != tokenizer.pad_token_id).long()  # Ensure attention mask is set
         outputs = model.generate(input_ids, attention_mask=attention_mask, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
         response = outputs[0][input_ids.shape[-1]:]
