@@ -77,22 +77,20 @@ def select_prompt_template(query_text: str) -> str:
     
 def select_message_template(query_text: str) -> str:
     lang_for_tr_llm = detect(query_text)
-    if lang_for_tr_llm == 'en':
-        messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
-            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
-        ]
-    elif lang_for_tr_llm == 'tr':    
-        messages = [
-            {"role": "system", "content": "Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context}"},
-            {"role": "user", "content": "Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}"}
-        ]  
+    if lang_for_tr_llm == 'tr':    
+        return """
+        Aşağıdaki bağlama dayanarak soruyu cevaplayın: 
+        {context}
+        ---
+        Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}
+        """
     else:
-        messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
-            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
-        ]
-    return messages    
+        return """
+        Answer the question based only on the following context: 
+        {context}
+        ---
+        Answer the question based on the above context: {question}
+        """  
 
 def main():
     parser = argparse.ArgumentParser()
