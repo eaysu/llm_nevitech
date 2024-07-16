@@ -115,18 +115,35 @@ def query_rag(query_text: str, language_model: str):
 
     elif language_model == "Eurdem/Defne_llama3_2x8B":
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
 
-        messages = select_message_template(query_text, prompt)
+        messages = [
+            {"role": "system", "content": "You are a helpful chatbot, named Defne, who always responds friendly."},
+            {"role": "user", "content": prompt}
+        ]
 
-        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
-        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
-        response = outputs[0][input_ids.shape[-1]:]
-        print(tokenizer.decode(response, skip_special_tokens=True))
+        # Tokenize the input messages
+        try:
+            input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+        except Exception as e:
+            print(f"Error during tokenization: {e}")
+            return
 
-        """inputs = tokenizer(messages, return_tensors="pt")
-        outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
-        response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)"""
+        # Check the shape of the input tensor
+        print(f"Input tensor shape: {input_ids.shape}")
+
+        # Generate the response
+        try:
+            outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
+            response = outputs[0][input_ids.shape[-1]:]
+            response_text = tokenizer.decode(response, skip_special_tokens=True)
+        except Exception as e:
+            print(f"Error during model generation: {e}")
+            return
+
+    """inputs = tokenizer(messages, return_tensors="pt")
+    outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
+    response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)"""
 
     end_time = time.time()
     elapsed_time = end_time - start_time
