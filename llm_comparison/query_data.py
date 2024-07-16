@@ -75,22 +75,17 @@ def select_prompt_template(query_text: str) -> str:
     else:
         return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
     
-def select_message_template(query_text: str) -> str:
+def select_message_template(query_text: str, context_text: str ) -> str:
     lang_for_tr_llm = detect(query_text)
-    if lang_for_tr_llm == 'en':
+    if lang_for_tr_llm == 'tr':    
         messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
-            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
-        ]
-    elif lang_for_tr_llm == 'tr':    
-        messages = [
-            {"role": "system", "content": "Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context}"},
-            {"role": "user", "content": "Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}"}
+            {"role": "system", "content": "Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context_text}"},
+            {"role": "user", "content": "Yukarıdaki bağlama dayanarak soruyu cevaplayın: {query_text}"}
         ]  
     else:
         messages = [
-            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
-            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context_text}"},
+            {"role": "user", "content": "Answer the question based only on the following context: {query_text}"}
         ]
     return messages    
 
@@ -118,9 +113,7 @@ def query_rag(query_text: str, language_model: str):
         response_text = model.invoke(prompt)
 
     elif language_model == "Eurdem/Defne_llama3_2x8B":
-        messages = select_message_template(query_text)
-        for msg in messages:
-            msg['content'] = msg['content'].format(context=context_text, question=query_text)
+        messages = select_message_template(query_text, context_text)
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
 
@@ -129,6 +122,22 @@ def query_rag(query_text: str, language_model: str):
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
         print(response_text)
+
+    elif language_model == "Orbina/Orbita-v0.1":
+        device = "cuda"
+        messages = select_message_template(query_text, context_text)
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype="auto", device_map="auto")
+        tokenizer = AutoTokenizer.from_pretrained(language_model)
+
+        text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        model_inputs = tokenizer([text], return_tensors="pt").to(device)
+
+        generated_ids = model.generate(model_inputs.input_ids, temperature=0.3, top_k=50, top_p=0.9, max_new_tokens=512, repetition_penalty=1,)
+        generated_ids = [
+            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
+
+        response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]    
 
     """inputs = tokenizer(messages, return_tensors="pt")
     outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
