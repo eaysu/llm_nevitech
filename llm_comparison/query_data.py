@@ -77,20 +77,22 @@ def select_prompt_template(query_text: str) -> str:
     
 def select_message_template(query_text: str) -> str:
     lang_for_tr_llm = detect(query_text)
-    if lang_for_tr_llm == 'tr':    
-        return """
-        Aşağıdaki bağlama dayanarak soruyu cevaplayın: 
-        {context}
-        ---
-        Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}
-        """
+    if lang_for_tr_llm == 'en':
+        messages = [
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
+            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
+        ]
+    elif lang_for_tr_llm == 'tr':    
+        messages = [
+            {"role": "system", "content": "Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context}"},
+            {"role": "user", "content": "Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}"}
+        ]  
     else:
-        return """
-        Answer the question based only on the following context: 
-        {context}
-        ---
-        Answer the question based on the above context: {question}
-        """  
+        messages = [
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly: {context}"},
+            {"role": "user", "content": "Answer the question based only on the following context: {question}"}
+        ]
+    return messages    
 
 def main():
     parser = argparse.ArgumentParser()
@@ -116,17 +118,17 @@ def query_rag(query_text: str, language_model: str):
         response_text = model.invoke(prompt)
 
     elif language_model == "Eurdem/Defne_llama3_2x8B":
-        prompt_template_str = select_message_template(query_text)
-        prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
-        prompt = prompt_template.format(context=context_text, question=query_text)
-
+        messages = select_message_template(query_text)
+        for msg in messages:
+            msg['content'] = msg['content'].format(context=context_text, question=query_text)
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
 
-        input_ids = tokenizer.apply_chat_template(prompt, return_tensors="pt")
-        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
+        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
         response = outputs[0][input_ids.shape[-1]:]
-        print(tokenizer.decode(response, skip_special_tokens=True))
+        response_text = tokenizer.decode(response, skip_special_tokens=True)
+        print(response_text)
 
     """inputs = tokenizer(messages, return_tensors="pt")
     outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
