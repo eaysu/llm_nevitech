@@ -124,7 +124,7 @@ def query_rag(query_text: str, language_model: str):
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto")
 
-        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt")
         outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
