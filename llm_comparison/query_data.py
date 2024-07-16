@@ -1,5 +1,6 @@
 import argparse
 import time
+import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
@@ -67,6 +68,25 @@ def select_prompt_template(query_text: str, language_model: str) -> str:
         return PROMPT_TEMPLATE_IT
     else:
         return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
+    
+def select_message_template(query_text: str, prompt: str) -> str:
+    lang_for_tr_llm = detect(query_text)
+    if lang_for_tr_llm == 'en':
+        messages = [
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
+            {"role": "user", "content": prompt}
+        ]
+    elif lang_for_tr_llm == 'tr':    
+        messages = [
+            {"role": "system", "content": "Sen Türkçe konuşan bir chatbotsun."},
+            {"role": "user", "content": prompt}
+        ]  
+    else:
+        messages = [
+            {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
+            {"role": "user", "content": prompt}
+        ]
+    return messages    
 
 def main():
     parser = argparse.ArgumentParser()
@@ -92,33 +112,17 @@ def query_rag(query_text: str, language_model: str):
     if language_model in ollama_language_models:
         model = Ollama(model=language_model)
         response_text = model.invoke(prompt)
-    else:
+
+    elif language_model == "Eurdem/Defne_llama3_2x8B":
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model)
+        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
 
-        lang_for_tr_llm = detect(query_text)
+        messages = select_message_template(query_text, prompt)
 
-        if lang_for_tr_llm == 'en':
-            messages = [
-                {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
-                {"role": "user", "content": prompt}
-            ]
-        elif lang_for_tr_llm == 'tr':    
-            messages = [
-                {"role": "system", "content": "Sen Türkçe konuşan bir chatbotsun."},
-                {"role": "user", "content": prompt}
-            ]  
-        else:
-            messages = [
-                {"role": "system", "content": "You are a helpful chatbot who always responds friendly."},
-                {"role": "user", "content": prompt}
-            ]
-    
-        if language_model in llama_language_models:
-            input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
-            outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500)
-            response = outputs[0][input_ids.shape[-1]:]
-            response_text = tokenizer.decode(response, skip_special_tokens=True)
+        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
+        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
+        response = outputs[0][input_ids.shape[-1]:]
+        print(tokenizer.decode(response, skip_special_tokens=True))
 
         """inputs = tokenizer(messages, return_tensors="pt")
         outputs = model.generate(**inputs, max_length=512, max_new_tokens=50)
