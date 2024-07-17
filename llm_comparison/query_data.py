@@ -9,7 +9,7 @@ from langdetect import detect
 
 from get_embedding_function import get_embedding_function
 
-ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b"]
+ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b", "mixtral:8x7b"]
 llama_language_models = ["curiositytech/MARS", "Eurdem/Defne_llama3_2x8B", "Metin/LLaMA-3-8B-Instruct-TR-DPO", "ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1", "meta-llama/Meta-Llama-3-8B-Instruct"]
 mistral_language_models = ["Eurdem/megatron_1.1_MoE_2x7B"]
 qwen2_language_models = ["Orbina/Orbita-v0.1"]
