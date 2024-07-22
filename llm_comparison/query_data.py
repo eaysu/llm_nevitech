@@ -161,10 +161,15 @@ def query_rag(query_text: str, language_model: str):
             {"role": "user", "content": f"{query_text}"},
         ]
 
+        # Combine the messages into a single input text
+        input_text = "\n".join([f"{message['role']}: {message['content']}" for message in messages])
+
+        # Initialize the chatbot pipeline
         chatbot = pipeline("text-generation", model="mistralai/Mistral-Nemo-Instruct-2407")
 
-        # Generate a response with increased max_length
-        response_text = chatbot(messages, max_length=200)  # Adjust the max length as needed        
+        # Generate a response
+        response = chatbot(input_text, max_length=2000)
+        response_text = response[0]['generated_text']
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
