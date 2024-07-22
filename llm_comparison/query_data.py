@@ -143,7 +143,7 @@ def query_rag(query_text: str, language_model: str):
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
 
         messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "system", "content": f"Verilen bağlama göre soruyu türkçe cevaplayınız: {context_text}"},
             {"role": "user", "content": f"{query_text}"},
         ]
 
@@ -162,10 +162,12 @@ def query_rag(query_text: str, language_model: str):
         #context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
         #query_text = "Masamın üstünde ne var?"
 
+        print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
+
         # Prepare the prompt with context and query
         messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}\n"},
-            {"role": "user", "content": f"Cevap: {query_text}\n"},
+            {"role": "system", "content": f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\n"},
+            {"role": "user", "content": f"Verilen bağlama göre bu soruyu cevapla: {query_text}\n"},
         ]
 
         # Combine the messages into a single input string
