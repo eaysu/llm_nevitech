@@ -159,8 +159,8 @@ def query_rag(query_text: str, language_model: str):
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
         # Define context and query
-        context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-        query_text = "Masamın üstünde ne var?"
+        #context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
+        #query_text = "Masamın üstünde ne var?"
 
         # Prepare the prompt with context and query
         messages = [
