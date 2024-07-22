@@ -8,6 +8,9 @@ from langchain_community.llms.ollama import Ollama
 from langdetect import detect
 from huggingface_hub import login
 
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch
+import torch
+
 from get_embedding_function import get_embedding_function
 
 ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b", "mixtral:8x7b"]
@@ -156,7 +159,16 @@ def query_rag(query_text: str, language_model: str):
         login(token="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")
 
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model)
+        #model = AutoModelForCausalLM.from_pretrained(language_model)
+
+        # Initialize weights and load the model to multiple GPUs
+        with init_empty_weights():
+            model = AutoModelForCausalLM.from_pretrained(language_model)
+
+        model = load_checkpoint_and_dispatch(
+            model, "your-model-checkpoint", device_map="auto", no_split_module_classes=["BloomBlock"]
+        )
+
 
         # Define context and query
         #context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
