@@ -164,10 +164,7 @@ def query_rag(query_text: str, language_model: str):
         chatbot = pipeline("text-generation", model="mistralai/Mistral-Nemo-Instruct-2407")
 
         # Generate a response with increased max_length
-        response = chatbot(messages, max_length=200)  # Adjust the max length as needed
-        print(response)
-
-        
+        response_text = chatbot(messages, max_length=200)  # Adjust the max length as needed        
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
