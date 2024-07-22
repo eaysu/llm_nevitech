@@ -158,15 +158,10 @@ def query_rag(query_text: str, language_model: str):
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
-        # Define the messages
-        messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": f"{query_text}"},
-        ]
+        prompt_template_str = select_prompt_template(query_text)
+        prompt = prompt_template_str.format(context=context_text, question=query_text)
 
-        # Combine the messages into a single input string
-        input_text = messages[0]['content'] + "\n" + messages[1]['content']
-        inputs = tokenizer(input_text, return_tensors="pt")
+        inputs = tokenizer(prompt, return_tensors="pt")
 
         # Remove 'token_type_ids' from inputs if present
         inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
@@ -187,9 +182,9 @@ def query_rag(query_text: str, language_model: str):
     elapsed_time = end_time - start_time
 
     sources = [{"id": doc.metadata.get("id", None), "content": doc.page_content} for doc, _score in results]
-    #formatted_sources = "\n".join([f"{source['id']}: {source['content']}" for source in sources])
+    formatted_sources = "\n".join([f"{source['id']}: {source['content']}" for source in sources])
     
-    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nKaynaklar:\n{sources}\nSüre: {elapsed_time:.2f} saniye\n"
+    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nSüre: {elapsed_time:.2f} saniye\n" #Kaynaklar:\n{formatted_sources}\n#
     print(formatted_response)
     return response_text
 
