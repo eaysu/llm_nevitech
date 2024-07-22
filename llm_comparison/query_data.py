@@ -148,7 +148,7 @@ def query_rag(query_text: str, language_model: str):
         ]
 
         input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
-        outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
+        outputs = model.generate(input_ids, max_new_tokens=256, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
     elif language_model == "mistralai/Mistral-Nemo-Base-2407":
@@ -176,7 +176,7 @@ def query_rag(query_text: str, language_model: str):
         inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
 
         # Generate the answer
-        outputs = model.generate(**inputs, max_new_tokens=50)
+        outputs = model.generate(**inputs, max_new_tokens=256)
         response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     else:
