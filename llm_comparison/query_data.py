@@ -157,8 +157,8 @@ def query_rag(query_text: str, language_model: str):
 
         # Define the messages
         messages = [
-            {"role": "system", "content": "Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": "{query_text}"},
+            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "user", "content": f"{query_text}"},
         ]
 
         chatbot = pipeline("text-generation", model="mistralai/Mistral-Nemo-Instruct-2407")
