@@ -168,13 +168,13 @@ def query_rag(query_text: str, language_model: str):
 
         # Format the prompt with context and question
         prompt = PROMPT_TEMPLATE_TR.format(context=context_text, question=query_text)
-        inputs = tokenizer(prompt, return_tensors="pt", add_special_tokens=True)
+        inputs = tokenizer(prompt, return_tensors="pt")
 
         # Remove 'token_type_ids' from inputs if present
-        inputs.pop('token_type_ids', None)
+        inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
 
         # Generate the answer
-        outputs = model.generate(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=50)
+        outputs = model.generate(**inputs, max_new_tokens=50)
         response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     else:
