@@ -161,15 +161,17 @@ def query_rag(query_text: str, language_model: str):
         # Initialize the accelerator
         accelerator = Accelerator()
 
+        language_model = "path_to_your_model"
+
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
-       # Prepare the model for distributed training/inference
+        # Prepare the model for distributed training/inference
         model = accelerator.prepare(model)
 
         # Define context and query
-        #context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-        #query_text = "Masamın üstünde ne var?"
+        # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
+        # query_text = "Masamın üstünde ne var?"
 
         print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
