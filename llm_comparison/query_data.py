@@ -1,14 +1,14 @@
 import argparse
 import time
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
 from langdetect import detect
 from huggingface_hub import login
 
-from accelerate import infer_auto_device_map
+from accelerate import Accelerator
 import torch
 
 from get_embedding_function import get_embedding_function
@@ -158,17 +158,14 @@ def query_rag(query_text: str, language_model: str):
         # Authenticate with Hugging Face
         login(token="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")
 
+        # Initialize the accelerator
+        accelerator = Accelerator()
+
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
-        # Check if multiple GPUs are available and set the device map accordingly
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        device_map = infer_auto_device_map(model)
-
-        # Move the model to the appropriate device
-        model.to(device)
-        if torch.cuda.device_count() > 1:
-            model = torch.nn.DataParallel(model)
+       # Prepare the model for distributed training/inference
+        model = accelerator.prepare(model)
 
         # Define context and query
         #context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
