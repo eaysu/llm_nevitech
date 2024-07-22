@@ -119,8 +119,8 @@ def query_rag(query_text: str, language_model: str):
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto",)
 
         messages = [
-            {"role": "system", "content": "Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": "{query_text}"},
+            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "user", "content": f"{query_text}"},
         ]
 
         input_ids = tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt").to(model.device)
@@ -143,8 +143,8 @@ def query_rag(query_text: str, language_model: str):
         model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
 
         messages = [
-            {"role": "system", "content": "Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": "{query_text}"},
+            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "user", "content": f"{query_text}"},
         ]
 
         input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
@@ -177,9 +177,9 @@ def query_rag(query_text: str, language_model: str):
     elapsed_time = end_time - start_time
 
     sources = [{"id": doc.metadata.get("id", None), "content": doc.page_content} for doc, _score in results]
-    formatted_sources = "\n".join([f"{source['id']}: {source['content']}" for source in sources])
+    #formatted_sources = "\n".join([f"{source['id']}: {source['content']}" for source in sources])
     
-    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nKaynaklar:\n{formatted_sources}\nSüre: {elapsed_time:.2f} saniye\n"
+    formatted_response = f"Seçilen Model: {language_model}\nYanıt: {response_text}\nKaynaklar:\n{sources}\nSüre: {elapsed_time:.2f} saniye\n"
     print(formatted_response)
     return response_text
 
