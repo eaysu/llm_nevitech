@@ -158,17 +158,19 @@ def query_rag(query_text: str, language_model: str):
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
-        # Define the prompt template
-        PROMPT_TEMPLATE_TR = """
-        Aşağıdaki bağlama dayanarak soruyu cevaplayın: 
-        {context}
-        ---
-        Yukarıdaki bağlama dayanarak soruyu cevaplayın: {question}
-        """
+        # Define context and query
+        context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
+        query_text = "Masamın üstünde ne var?"
 
-        # Format the prompt with context and question
-        prompt = PROMPT_TEMPLATE_TR.format(context=context_text, question=query_text)
-        inputs = tokenizer(prompt, return_tensors="pt")
+        # Prepare the prompt with context and query
+        messages = [
+            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "user", "content": f"{query_text}"},
+        ]
+
+        # Combine the messages into a single input string
+        input_text = messages[0]['content'] + "\n" + messages[1]['content']
+        inputs = tokenizer(input_text, return_tensors="pt")
 
         # Remove 'token_type_ids' from inputs if present
         inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
