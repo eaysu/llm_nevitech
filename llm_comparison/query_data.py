@@ -184,7 +184,7 @@ def query_rag(query_text: str, language_model: str):
         inputs = tokenizer(input_text, return_tensors="pt")
 
         # Remove 'token_type_ids' from inputs if present
-        inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
+        inputs = {key: value.to(accelerator.device) for key, value in inputs.items()}
 
         # Generate the answer
         outputs = model.generate(**inputs, max_new_tokens=256)
