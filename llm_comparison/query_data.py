@@ -161,8 +161,6 @@ def query_rag(query_text: str, language_model: str):
         # Initialize the accelerator
         accelerator = Accelerator()
 
-        language_model = "path_to_your_model"
-
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
 
