@@ -170,6 +170,25 @@ def query_rag(query_text: str, language_model: str):
         # Generate a response
         response = chatbot(input_text, max_length=2000)
         response_text = response[0]['generated_text']
+
+        # Function to extract the assistant's response from the generated text
+        def extract_assistant_response(generated_text):
+            lines = generated_text.split("\n")
+            is_assistant = False
+            assistant_response = ""
+            for line in lines:
+                if "role: assistant" in line:
+                    is_assistant = True
+                    continue
+                if is_assistant:
+                    if "role:" in line:
+                        break
+                    assistant_response += line.strip() + " "
+            return assistant_response.strip()
+
+        # Extract the assistant's response
+        response_text = extract_assistant_response(response_text)
+        
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
