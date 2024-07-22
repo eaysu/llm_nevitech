@@ -151,9 +151,12 @@ def query_rag(query_text: str, language_model: str):
         outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
-    elif language_model == "mistralai/Mistral-Nemo-Instruct-2407":
+    elif language_model == "mistralai/Mistral-Nemo-Base-2407":
         # Authenticate with Hugging Face
         login(token="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")
+
+        tokenizer = AutoTokenizer.from_pretrained(language_model)
+        model = AutoModelForCausalLM.from_pretrained(language_model)
 
         # Define the messages
         messages = [
@@ -161,34 +164,17 @@ def query_rag(query_text: str, language_model: str):
             {"role": "user", "content": f"{query_text}"},
         ]
 
-        # Combine the messages into a single input text
-        input_text = "\n".join([f"{message['role']}: {message['content']}" for message in messages])
+        # Combine the messages into a single input string
+        input_text = messages[0]['content'] + "\n" + messages[1]['content']
+        inputs = tokenizer(input_text, return_tensors="pt")
 
-        # Initialize the chatbot pipeline
-        chatbot = pipeline("text-generation", model="mistralai/Mistral-Nemo-Instruct-2407")
+        # Remove 'token_type_ids' from inputs if present
+        inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
 
-        # Generate a response
-        response = chatbot(input_text, max_length=2000)
-        response_text = response[0]['generated_text']
+        # Generate the answer
+        outputs = model.generate(**inputs, max_new_tokens=50)
+        response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Function to extract the assistant's response from the generated text
-        def extract_assistant_response(generated_text):
-            lines = generated_text.split("\n")
-            is_assistant = False
-            assistant_response = ""
-            for line in lines:
-                if "role: assistant" in line:
-                    is_assistant = True
-                    continue
-                if is_assistant:
-                    if "role:" in line:
-                        break
-                    assistant_response += line.strip() + " "
-            return assistant_response.strip()
-
-        # Extract the assistant's response
-        response_text = extract_assistant_response(response_text)
-        
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
