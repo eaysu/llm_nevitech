@@ -1,11 +1,12 @@
 import argparse
 import time
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
 from langdetect import detect
+from huggingface_hub import login
 
 from get_embedding_function import get_embedding_function
 
@@ -150,6 +151,22 @@ def query_rag(query_text: str, language_model: str):
         outputs = model.generate(input_ids, max_new_tokens=1024, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
+    elif language_model == "mistralai/Mistral-Nemo-Instruct-2407":
+        # Authenticate with Hugging Face
+        login(token="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")
+
+        # Define the messages
+        messages = [
+            {"role": "system", "content": "Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
+            {"role": "user", "content": "{query_text}"},
+        ]
+
+        chatbot = pipeline("text-generation", model="mistralai/Mistral-Nemo-Instruct-2407")
+
+        # Generate a response with increased max_length
+        response = chatbot(messages, max_length=200)  # Adjust the max length as needed
+        print(response)
+
         
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
