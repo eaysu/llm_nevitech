@@ -8,7 +8,7 @@ from langchain_community.llms.ollama import Ollama
 from langdetect import detect
 from huggingface_hub import login
 
-from accelerate import init_empty_weights, load_checkpoint_and_dispatch
+from accelerate import infer_auto_device_map
 import torch
 
 from get_embedding_function import get_embedding_function
@@ -159,18 +159,16 @@ def query_rag(query_text: str, language_model: str):
         login(token="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")
 
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        #model = AutoModelForCausalLM.from_pretrained(language_model)
+        model = AutoModelForCausalLM.from_pretrained(language_model)
 
-        # Initialize weights and load the model to multiple GPUs
-        with init_empty_weights():
-            model = AutoModelForCausalLM.from_pretrained(language_model)
+        # Check if multiple GPUs are available and set the device map accordingly
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device_map = infer_auto_device_map(model)
 
-        model = load_checkpoint_and_dispatch(
-            model, 
-            checkpoint=language_model,  # This tells accelerate to use the pre-trained model checkpoint from Hugging Face
-            device_map="auto"
-        )
-
+        # Move the model to the appropriate device
+        model.to(device)
+        if torch.cuda.device_count() > 1:
+            model = torch.nn.DataParallel(model)
 
         # Define context and query
         #context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
