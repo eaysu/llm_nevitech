@@ -181,6 +181,11 @@ def query_rag(query_text: str, language_model: str):
         outputs = model.generate(**inputs, max_new_tokens=256)
         response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
+        # Extract only the answer from the response text
+        # This assumes the answer follows the query text directly
+        start_index = response_text.find(query_text) + len(query_text)
+        response_text = response_text[start_index:].strip()
+
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         model = AutoModelForCausalLM.from_pretrained(language_model)
