@@ -164,8 +164,8 @@ def query_rag(query_text: str, language_model: str):
 
         # Prepare the prompt with context and query
         messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": f"{query_text}"},
+            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}\n"},
+            {"role": "user", "content": f"Cevap: {query_text}\n"},
         ]
 
         # Combine the messages into a single input string
