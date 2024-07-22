@@ -166,7 +166,9 @@ def query_rag(query_text: str, language_model: str):
             model = AutoModelForCausalLM.from_pretrained(language_model)
 
         model = load_checkpoint_and_dispatch(
-            model, "your-model-checkpoint", device_map="auto", no_split_module_classes=["BloomBlock"]
+            model, 
+            checkpoint=language_model,  # This tells accelerate to use the pre-trained model checkpoint from Hugging Face
+            device_map="auto"
         )
 
 
