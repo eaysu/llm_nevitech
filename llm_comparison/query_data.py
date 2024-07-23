@@ -8,8 +8,7 @@ from langchain_community.llms.ollama import Ollama
 from langdetect import detect
 from huggingface_hub import login
 
-from accelerate import Accelerator
-import torch
+from vllm import LLM
 
 from get_embedding_function import get_embedding_function
 
@@ -158,14 +157,9 @@ def query_rag(query_text: str, language_model: str):
         # Authenticate with Hugging Face
         login(token="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")
 
-        # Initialize the accelerator
-        accelerator = Accelerator()
-
         tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model)
-
-        # Prepare the model for distributed training/inference
-        model = accelerator.prepare(model)
+        # Initialize vLLM with the specified model and accelerator (all available GPUs)
+        llm = LLM(language_model, token=token, device='cuda')
 
         # Define context and query
         # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
@@ -184,7 +178,7 @@ def query_rag(query_text: str, language_model: str):
         inputs = tokenizer(input_text, return_tensors="pt")
 
         # Remove 'token_type_ids' from inputs if present
-        inputs = {key: value.to(accelerator.device) for key, value in inputs.items()}
+        inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
 
         # Generate the answer
         outputs = model.generate(**inputs, max_new_tokens=256)
