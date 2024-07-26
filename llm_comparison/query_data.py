@@ -155,7 +155,7 @@ def query_rag(query_text: str, language_model: str):
         response_text = tokenizer.decode(response, skip_special_tokens=True)
     elif language_model == "mistralai/Mistral-7B-v0.1":
         # Authenticate with Hugging Face
-        token = "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"
+        token = "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"
 
         # Authenticate with Hugging Face
         login(token=token)
