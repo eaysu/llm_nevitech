@@ -165,7 +165,7 @@ def query_rag(query_text: str, language_model: str):
             tokenizer = AutoTokenizer.from_pretrained(language_model)
             
             # Initialize vLLM with the specified model and accelerator (all available GPUs)
-            llm = LLM(model=language_model)
+            llm = LLM(model=language_model, dtype="float16")
 
             # Define context and query
             context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
@@ -176,6 +176,8 @@ def query_rag(query_text: str, language_model: str):
             # Prepare the prompt with context and query
             prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\nVerilen bağlama göre bu soruyu cevapla: {query_text}\n"
 
+            response_text = llm.generate(prompt)
+            """
             # Tokenize the input
             inputs = tokenizer(prompt, return_tensors="pt")
 
@@ -191,7 +193,7 @@ def query_rag(query_text: str, language_model: str):
             start_index = response_text.find(query_text) + len(query_text)
             response_text = response_text[start_index:].strip()
 
-            print(f"Response: {response_text}")
+            """
 
         except Exception as e:
             print(f"An error occurred: {e}")
