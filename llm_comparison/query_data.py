@@ -8,7 +8,7 @@ from langchain_community.llms.ollama import Ollama
 from langdetect import detect
 from huggingface_hub import login
 
-from vllm import LLM
+from vllm import LLM, SamplingParams
 
 from get_embedding_function import get_embedding_function
 
@@ -173,10 +173,15 @@ def query_rag(query_text: str, language_model: str):
 
             print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
+            params = SamplingParams(temperature=0.0, 
+                                     top_p=0.95, 
+                                     min_tokens=128, max_tokens=1024)
+
             # Prepare the prompt with context and query
             prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\nVerilen bağlama göre bu soruyu cevapla: {query_text}\n"
 
-            response_text = llm.generate(prompt)
+            response = llm.generate(prompt, params)
+            response_text = response[0].outputs[0].text
             """
             # Tokenize the input
             inputs = tokenizer(prompt, return_tensors="pt")
