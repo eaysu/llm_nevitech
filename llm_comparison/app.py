@@ -33,7 +33,7 @@ LANGUAGE_MODELS = {
     'meta-llama/Meta-Llama-3-8B-Instruct': 'meta-llama/Meta-Llama-3-8B-Instruct',
     'Eurdem/megatron_1.1_MoE_2x7B': 'Eurdem/megatron_1.1_MoE_2x7B',
     'mistralai/Mistral-Nemo-Instruct-2407': 'mistralai/Mistral-Nemo-Instruct-2407',
-    'mistralai/Mistral-7B-Instruct-v0.1': 'mistralai/Mistral-7B-Instruct-v0.1'
+    'mistralai/Mistral-7B-v0.1': 'mistralai/Mistral-7B-v0.1'
 }
 
 @app.route('/')

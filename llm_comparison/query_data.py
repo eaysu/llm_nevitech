@@ -153,7 +153,7 @@ def query_rag(query_text: str, language_model: str):
         outputs = model.generate(input_ids, max_new_tokens=256, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
-    elif language_model == "mistralai/Mistral-7B-Instruct-v0.1":
+    elif language_model == "mistralai/Mistral-7B-v0.1":
         # Authenticate with Hugging Face
         token = "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"
 
