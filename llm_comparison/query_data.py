@@ -168,8 +168,8 @@ def query_rag(query_text: str, language_model: str):
             llm = LLM(model=language_model, dtype="float16", tensor_parallel_size=4)
 
             # Define context and query
-            context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-            query_text = "Masamın üstünde ne var?"
+            # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
+            # query_text = "Masamın üstünde ne var?"
 
             print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
