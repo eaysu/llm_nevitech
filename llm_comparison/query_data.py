@@ -161,7 +161,7 @@ def query_rag(query_text: str, language_model: str):
 
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         # Initialize vLLM with the specified model and accelerator (all available GPUs)
-        llm = LLM(language_model, device='cuda')
+        llm = LLM(language_model, tokenizer=tokenizer, device='cuda')
 
         # Define context and query
         # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
