@@ -156,7 +156,7 @@ def query_rag(query_text: str, language_model: str):
     elif language_model == "mistralai/Mistral-Nemo-Instruct-2407":
         # Authenticate with Hugging Face
         token="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"
-        
+
         login(token=token)
 
         tokenizer = AutoTokenizer.from_pretrained(language_model)
@@ -177,7 +177,7 @@ def query_rag(query_text: str, language_model: str):
 
         # Combine the messages into a single input string
         input_text = messages[0]['content'] + "\n" + messages[1]['content']
-        inputs = tokenizer(input_text, return_tensors="pt")
+        inputs = tokenizer(input_text, return_tensors="pt").to("cuda")
 
         # Remove 'token_type_ids' from inputs if present
         inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
