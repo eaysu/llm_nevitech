@@ -153,9 +153,9 @@ def query_rag(query_text: str, language_model: str):
         outputs = model.generate(input_ids, max_new_tokens=256, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
         response = outputs[0][input_ids.shape[-1]:]
         response_text = tokenizer.decode(response, skip_special_tokens=True)
-    elif language_model == "mistralai/Mistral-Nemo-Instruct-2407":
+    elif language_model == "mistralai/Mistral-7B-Instruct-v0.1":
         # Authenticate with Hugging Face
-        token="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"
+        token = "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"
 
         login(token=token)
 
@@ -177,7 +177,7 @@ def query_rag(query_text: str, language_model: str):
 
         # Combine the messages into a single input string
         input_text = messages[0]['content'] + "\n" + messages[1]['content']
-        inputs = tokenizer(input_text, return_tensors="pt").to("cuda")
+        inputs = tokenizer(input_text, return_tensors="pt")
 
         # Remove 'token_type_ids' from inputs if present
         inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
