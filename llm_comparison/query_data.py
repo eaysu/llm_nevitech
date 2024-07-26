@@ -183,7 +183,7 @@ def query_rag(query_text: str, language_model: str):
         inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
 
         # Generate the answer
-        outputs = model.generate(**inputs, max_new_tokens=256)
+        outputs = llm.generate(**inputs, max_new_tokens=256)
         response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         # Extract only the answer from the response text
