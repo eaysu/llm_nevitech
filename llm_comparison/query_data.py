@@ -155,41 +155,46 @@ def query_rag(query_text: str, language_model: str):
         response_text = tokenizer.decode(response, skip_special_tokens=True)
     elif language_model == "mistralai/Mistral-7B-v0.1":
         # Authenticate with Hugging Face
-        token = "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"
+        token = "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"
 
+        # Authenticate with Hugging Face
         login(token=token)
 
-        tokenizer = AutoTokenizer.from_pretrained(language_model)
-        # Initialize vLLM with the specified model and accelerator (all available GPUs)
-        llm = LLM(language_model, tokenizer=tokenizer, device='cuda')
+        try:
+            # Load the tokenizer from Hugging Face
+            tokenizer = AutoTokenizer.from_pretrained(language_model)
+            
+            # Initialize vLLM with the specified model and accelerator (all available GPUs)
+            llm = LLM(model=language_model, tokenizer=tokenizer, device='cuda')
 
-        # Define context and query
-        # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-        # query_text = "Masamın üstünde ne var?"
+            # Define context and query
+            context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
+            query_text = "Masamın üstünde ne var?"
 
-        print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
+            print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
-        # Prepare the prompt with context and query
-        messages = [
-            {"role": "system", "content": f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\n"},
-            {"role": "user", "content": f"Verilen bağlama göre bu soruyu cevapla: {query_text}\n"},
-        ]
+            # Prepare the prompt with context and query
+            prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\nVerilen bağlama göre bu soruyu cevapla: {query_text}\n"
 
-        # Combine the messages into a single input string
-        input_text = messages[0]['content'] + "\n" + messages[1]['content']
-        inputs = tokenizer(input_text, return_tensors="pt")
+            # Tokenize the input
+            inputs = tokenizer(prompt, return_tensors="pt")
 
-        # Remove 'token_type_ids' from inputs if present
-        inputs = {key: value for key, value in inputs.items() if key != 'token_type_ids'}
+            # Ensure inputs are moved to GPU if available
+            if torch.cuda.is_available():
+                inputs = {key: value.cuda() for key, value in inputs.items()}
 
-        # Generate the answer
-        outputs = llm.generate(**inputs, max_new_tokens=256)
-        response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            # Generate the answer
+            outputs = llm.generate(**inputs, max_new_tokens=256)
+            response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Extract only the answer from the response text
-        # This assumes the answer follows the query text directly
-        start_index = response_text.find(query_text) + len(query_text)
-        response_text = response_text[start_index:].strip()
+            # Extract only the answer from the response text
+            start_index = response_text.find(query_text) + len(query_text)
+            response_text = response_text[start_index:].strip()
+
+            print(f"Response: {response_text}")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
