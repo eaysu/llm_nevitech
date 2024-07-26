@@ -155,7 +155,9 @@ def query_rag(query_text: str, language_model: str):
         response_text = tokenizer.decode(response, skip_special_tokens=True)
     elif language_model == "mistralai/Mistral-Nemo-Instruct-2407":
         # Authenticate with Hugging Face
-        login(token="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")
+        token="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"
+        
+        login(token=token)
 
         tokenizer = AutoTokenizer.from_pretrained(language_model)
         # Initialize vLLM with the specified model and accelerator (all available GPUs)
