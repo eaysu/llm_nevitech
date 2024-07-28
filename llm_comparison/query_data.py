@@ -13,9 +13,6 @@ from vllm import LLM, SamplingParams
 from get_embedding_function import get_embedding_function
 
 ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b", "mixtral:8x7b"]
-llama_language_models = ["curiositytech/MARS", "Eurdem/Defne_llama3_2x8B", "Metin/LLaMA-3-8B-Instruct-TR-DPO", "ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1", "meta-llama/Meta-Llama-3-8B-Instruct"]
-mistral_language_models = ["Eurdem/megatron_1.1_MoE_2x7B"]
-qwen2_language_models = ["Orbina/Orbita-v0.1"]
 
 CHROMA_PATH = "chroma"
 
@@ -116,43 +113,6 @@ def query_rag(query_text: str, language_model: str):
         model = Ollama(model=language_model)
         response_text = model.invoke(prompt)
 
-    elif language_model == "curiositytech/MARS":
-        tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto",)
-
-        messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": f"{query_text}"},
-        ]
-
-        input_ids = tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt").to(model.device)
-
-        terminators = [tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|eot_id|>")]
-
-        outputs = model.generate(
-            input_ids,
-            max_new_tokens=256,
-            eos_token_id=terminators,
-            do_sample=True,
-            temperature=0.6,
-            top_p=0.9,
-        )
-
-        response = outputs[0][input_ids.shape[-1]:]
-        response_text = tokenizer.decode(response, skip_special_tokens=True)
-    elif language_model == "Eurdem/Defne_llama3_2x8B":
-        tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit= True)
-
-        messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu türkçe cevaplayınız: {context_text}"},
-            {"role": "user", "content": f"{query_text}"},
-        ]
-
-        input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
-        outputs = model.generate(input_ids, max_new_tokens=256, do_sample=True, temperature=0.7, top_p=0.7, top_k=500,)
-        response = outputs[0][input_ids.shape[-1]:]
-        response_text = tokenizer.decode(response, skip_special_tokens=True)
     elif language_model == "mistralai/Mistral-7B-v0.1":
         # Authenticate with Hugging Face
         token = "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"
