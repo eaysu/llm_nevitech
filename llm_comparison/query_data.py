@@ -133,15 +133,15 @@ def query_rag(query_text: str, language_model: str):
 
             print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
-            params = SamplingParams(temperature=0.0, 
+            params = SamplingParams(temperature=0.8, 
                                      top_p=0.95, 
                                      min_tokens=128, max_tokens=1024)
 
             # Prepare the prompt with context and query
             prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\nVerilen bağlama göre bu soruyu cevapla: {query_text}\n"
 
-            response = llm.generate(prompt, params)
-            response_text = response[0].outputs[0].text
+            output = llm.generate(prompt, params)
+            response_text = output.outputs[0].text
             """
             # Tokenize the input
             inputs = tokenizer(prompt, return_tensors="pt")
