@@ -75,20 +75,6 @@ def select_prompt_template(query_text: str) -> str:
     else:
         return PROMPT_TEMPLATE_EN  # Default to English if language is not recognized
     
-"""def select_message_template(query_text: str, context_text: str ) -> str:
-    lang_for_tr_llm = detect(query_text)
-    if lang_for_tr_llm == 'tr':    
-        messages = [
-            {"role": "system", "content": f"Aşağıdaki bağlama dayanarak soruyu cevaplayın: {context_text}"},
-            {"role": "user", "content": f"Yukarıdaki bağlama dayanarak soruyu cevaplayın: {query_text}"}
-        ]  
-    else:
-        messages = [
-            {"role": "system", "content": f"You are a helpful chatbot who always responds friendly: {context_text}"},
-            {"role": "user", "content": f"Answer the question based only on the following context: {query_text}"}
-        ]
-    return messages    """
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("query_text", type=str, help="Sorgu metni.")
@@ -113,7 +99,7 @@ def query_rag(query_text: str, language_model: str):
         model = Ollama(model=language_model)
         response_text = model.invoke(prompt)
 
-    elif language_model == "mistralai/Mistral-7B-v0.1":
+    elif language_model == "mistralai/Mistral-7B-v0.3":
         # Authenticate with Hugging Face
         token = "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"
 
@@ -125,7 +111,7 @@ def query_rag(query_text: str, language_model: str):
             tokenizer = AutoTokenizer.from_pretrained(language_model)
             
             # Initialize vLLM with the specified model and accelerator (all available GPUs)
-            llm = LLM(model=language_model, dtype="float16", tensor_parallel_size=4)
+            llm = LLM(model=language_model, dtype="half", tensor_parallel_size=4)
 
             # Define context and query
             # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
@@ -133,13 +119,10 @@ def query_rag(query_text: str, language_model: str):
 
             print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
-            params = SamplingParams(temperature=0.8, 
-                                     top_p=0.95, 
-                                     min_tokens=128, max_tokens=1024)
+            params = SamplingParams(temperature=0.05, top_p=0.95, max_tokens=128)
 
             # Prepare the prompt with context and query
-            prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin: {context_text}\nVerilen bağlama göre bu soruyu cevapla: {query_text}\n"
-
+            prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin.\n\nBağlam: {context_text}\nSoru: {query_text}\n"
             output = llm.generate(prompt, params)
             response_text = output[0].outputs[0].text
             """
