@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO, emit
 import os
+import psutil
 from populate_database import main as populate_db_main
 from query_data import query_rag
 
@@ -28,8 +29,16 @@ LANGUAGE_MODELS = {
     'meta-llama/Meta-Llama-3-8B-Instruct': 'meta-llama/Meta-Llama-3-8B-Instruct',
     'Eurdem/megatron_1.1_MoE_2x7B': 'Eurdem/megatron_1.1_MoE_2x7B',
     'mistralai/Mistral-Nemo-Instruct-2407': 'mistralai/Mistral-Nemo-Instruct-2407',
-    'mistralai/Mistral-7B-v0.3': 'mistralai/Mistral-7B-v0.3'
+    'mistralai/Mistral-7B-v0.1': 'mistralai/Mistral-7B-v0.1'
 }
+
+def kill_processes_by_name(name):
+    for proc in psutil.process_iter():
+        try:
+            if name in proc.name():
+                proc.kill()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
 
 @app.route('/')
 def index():
@@ -65,5 +74,14 @@ def handle_query(data):
         emit('response', {'data': response_part})
         socketio.sleep(0.1)  # Adjust as necessary for more realistic streaming
 
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+    kill_processes_by_name('vLLM')
+
 if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=5000)
+    try:
+        socketio.run(app, host='0.0.0.0', port=5000)
+    except KeyboardInterrupt:
+        kill_processes_by_name('vLLM')
+        print('Server shut down')

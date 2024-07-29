@@ -114,12 +114,12 @@ def query_rag(query_text: str, language_model: str):
             llm = LLM(model=language_model, dtype="half", tensor_parallel_size=4)
 
             # Define context and query
-            # context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-            # query_text = "Masamın üstünde ne var?"
+            context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
+            query_text = "Masamın üstünde ne var?"
 
             print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
-            params = SamplingParams(temperature=0.05, top_p=0.95, max_tokens=128)
+            params = SamplingParams(temperature=0.05, top_p=0.95, max_tokens=1024)
 
             # Prepare the prompt with context and query
             prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin.\n\nBağlam: {context_text}\nSoru: {query_text}\n"
