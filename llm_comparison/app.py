@@ -1,18 +1,13 @@
-from flask import Flask, request, render_template, redirect, url_for, send_from_directory
-import os
-import time
+from flask import Flask, request, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
-from langchain_community.vectorstores import Chroma
-from langchain.prompts import ChatPromptTemplate
-from langchain_community.llms.ollama import Ollama
-from langdetect import detect
-
-from get_embedding_function import get_embedding_function
+from flask_socketio import SocketIO, emit
+import os
 from populate_database import main as populate_db_main
-from query_data import query_rag, select_prompt_template
+from query_data import query_rag
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'data'
+socketio = SocketIO(app)
 
 CHROMA_PATH = "chroma"
 
@@ -25,6 +20,13 @@ LANGUAGE_MODELS = {
     'llama3:70b': 'llama3:70b',
     'qwen2:72b': 'qwen2:72b',
     'mixtral:8x7b': 'mixtral:8x7b',
+    'curiositytech/MARS': 'curiositytech/MARS',
+    'Orbina/Orbita-v0.1': 'Orbina/Orbita-v0.1',
+    'Eurdem/Defne_llama3_2x8B': 'Eurdem/Defne_llama3_2x8B',
+    'Metin/LLaMA-3-8B-Instruct-TR-DPO': 'Metin/LLaMA-3-8B-Instruct-TR-DPO',
+    'ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1': 'ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1',
+    'meta-llama/Meta-Llama-3-8B-Instruct': 'meta-llama/Meta-Llama-3-8B-Instruct',
+    'Eurdem/megatron_1.1_MoE_2x7B': 'Eurdem/megatron_1.1_MoE_2x7B',
     'mistralai/Mistral-Nemo-Instruct-2407': 'mistralai/Mistral-Nemo-Instruct-2407',
     'mistralai/Mistral-7B-v0.1': 'mistralai/Mistral-7B-v0.1'
 }
@@ -49,19 +51,19 @@ def upload_file():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return redirect(url_for('index'))
 
-@app.route('/query', methods=['POST'])
-def query():
-    question = request.form['question']
-    model_name = request.form['model']
+@socketio.on('query')
+def handle_query(data):
+    question = data['question']
+    model_name = data['model']
     language_model = LANGUAGE_MODELS.get(model_name, 'mistral')
     
     # Process and add PDFs to the Chroma database
     populate_db_main()
 
     # Get response from the language model
-    response_text = query_rag(question, language_model)
-    
-    return render_template('index.html', models=LANGUAGE_MODELS.keys(), response=response_text)
+    for response_part in query_rag(question, language_model):
+        emit('response', {'data': response_part})
+        socketio.sleep(0.1)  # Adjust as necessary for more realistic streaming
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000)

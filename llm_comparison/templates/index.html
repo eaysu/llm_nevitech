@@ -11,25 +11,23 @@
             white-space: pre;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.min.js"></script>
     <script>
-        function typeWriter(text, elementId, delay = 50) {
-            let i = 0;
-            function type() {
-                if (i < text.length) {
-                    document.getElementById(elementId).innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, delay);
-                }
-            }
-            document.getElementById(elementId).innerHTML = "";  // Clear previous text
-            type();
-        }
-        window.onload = function() {
-            const responseText = document.getElementById('hidden-response').innerText;
-            if (responseText) {
-                typeWriter(responseText, "response");
-            }
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const socket = io();
+
+            document.getElementById("query-form").addEventListener("submit", (event) => {
+                event.preventDefault();
+                const question = document.getElementById("question").value;
+                const model = document.getElementById("model").value;
+                socket.emit("query", { question, model });
+                document.getElementById("response").innerHTML = "";
+            });
+
+            socket.on("response", (msg) => {
+                document.getElementById("response").innerHTML += msg.data;
+            });
+        });
     </script>
 </head>
 <body>
@@ -41,7 +39,7 @@
             <button type="submit" class="button">Upload</button>
         </form>
 
-        <form action="{{ url_for('query') }}" method="post" class="form">
+        <form id="query-form" class="form">
             <label for="question">Your Question:</label>
             <input type="text" name="question" id="question" class="input-text" required>
             
@@ -55,13 +53,10 @@
             <button type="submit" class="button">Run</button>
         </form>
 
-        {% if response %}
         <div class="response-container">
             <h2>Response:</h2>
-            <div id="hidden-response" style="display: none;">{{ response }}</div>
             <p id="response"></p>
         </div>
-        {% endif %}
     </div>
 </body>
 </html>
