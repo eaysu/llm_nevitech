@@ -25,13 +25,6 @@ LANGUAGE_MODELS = {
     'llama3:70b': 'llama3:70b',
     'qwen2:72b': 'qwen2:72b',
     'mixtral:8x7b': 'mixtral:8x7b',
-    'curiositytech/MARS': 'curiositytech/MARS',
-    'Orbina/Orbita-v0.1': 'Orbina/Orbita-v0.1',
-    'Eurdem/Defne_llama3_2x8B': 'Eurdem/Defne_llama3_2x8B',
-    'Metin/LLaMA-3-8B-Instruct-TR-DPO': 'Metin/LLaMA-3-8B-Instruct-TR-DPO',
-    'ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1': 'ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1',
-    'meta-llama/Meta-Llama-3-8B-Instruct': 'meta-llama/Meta-Llama-3-8B-Instruct',
-    'Eurdem/megatron_1.1_MoE_2x7B': 'Eurdem/megatron_1.1_MoE_2x7B',
     'mistralai/Mistral-Nemo-Instruct-2407': 'mistralai/Mistral-Nemo-Instruct-2407',
     'mistralai/Mistral-7B-v0.1': 'mistralai/Mistral-7B-v0.1'
 }

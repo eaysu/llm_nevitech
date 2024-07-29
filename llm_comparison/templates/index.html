@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Question Answering</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        #response {
+            font-family: monospace;
+            white-space: pre;
+        }
+    </style>
+    <script>
+        function typeWriter(text, elementId, delay = 50) {
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    document.getElementById(elementId).innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, delay);
+                }
+            }
+            document.getElementById(elementId).innerHTML = "";  // Clear previous text
+            type();
+        }
+        window.onload = function() {
+            const responseText = "{{ response|safe }}";
+            if (responseText) {
+                typeWriter(responseText, "response");
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -32,7 +58,7 @@
         {% if response %}
         <div class="response-container">
             <h2>Response:</h2>
-            <p>{{ response }}</p>
+            <p id="response"></p>
         </div>
         {% endif %}
     </div>
