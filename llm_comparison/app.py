@@ -3,8 +3,7 @@ from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO, emit
 import os
 import psutil
-from populate_database import main as populate_db_main
-from query_data import query_rag
+import subprocess
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'data'
@@ -52,10 +51,8 @@ def upload_file():
     if file.filename == '':
         return redirect(request.url)
     if file:
-        # Ensure the upload folder exists
         if not os.path.exists(app.config['UPLOAD_FOLDER']):
             os.makedirs(app.config['UPLOAD_FOLDER'])
-
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return redirect(url_for('index'))
@@ -66,18 +63,32 @@ def handle_query(data):
     model_name = data['model']
     language_model = LANGUAGE_MODELS.get(model_name, 'mistral')
     
-    # Process and add PDFs to the Chroma database
     populate_db_main()
 
-    # Get response from the language model
-    for response_part in query_rag(question, language_model):
-        emit('response', {'data': response_part})
-        socketio.sleep(0.1)  # Adjust as necessary for more realistic streaming
+    try:
+        for response_part in query_rag(question, language_model):
+            emit('response', {'data': response_part})
+            socketio.sleep(0.1)
+    except Exception as e:
+        emit('response', {'data': f"Error: {str(e)}"})
 
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
     kill_processes_by_name('vLLM')
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    kill_processes_by_name('vLLM')
+    shutdown_server()
+    return 'Server shutting down...'
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func:
+        func()
+    else:
+        raise RuntimeError('Not running with the Werkzeug Server')
 
 if __name__ == "__main__":
     try:
