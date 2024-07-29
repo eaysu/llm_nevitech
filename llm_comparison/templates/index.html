@@ -25,7 +25,7 @@
             type();
         }
         window.onload = function() {
-            const responseText = "{{ response|safe }}";
+            const responseText = document.getElementById('hidden-response').innerText;
             if (responseText) {
                 typeWriter(responseText, "response");
             }
@@ -58,6 +58,7 @@
         {% if response %}
         <div class="response-container">
             <h2>Response:</h2>
+            <div id="hidden-response" style="display: none;">{{ response }}</div>
             <p id="response"></p>
         </div>
         {% endif %}
