@@ -5,6 +5,9 @@ import os
 import psutil
 import subprocess
 
+from populate_database import main as populate_db_main
+from query_data import query_rag
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'data'
 socketio = SocketIO(app)
@@ -96,3 +99,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         kill_processes_by_name('vLLM')
         print('Server shut down')
+
