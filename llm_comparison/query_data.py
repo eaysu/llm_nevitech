@@ -100,51 +100,36 @@ def query_rag(query_text: str, language_model: str):
         response_text = model.invoke(prompt)
 
     elif language_model == "mistralai/Mistral-7B-v0.3":
-        # Authenticate with Hugging Face
-        token = "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"
+        sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=200)
 
-        # Authenticate with Hugging Face
-        login(token=token)
+        llm = LLM(trust_remote_code=True, model="google/gemma-2-9b", dtype=torch.float16, tensor_parallel_size=4, max_model_len=20_000)
 
-        try:
-            # Load the tokenizer from Hugging Face
-            tokenizer = AutoTokenizer.from_pretrained(language_model)
-            
-            # Initialize vLLM with the specified model and accelerator (all available GPUs)
-            llm = LLM(model=language_model, dtype="half", tensor_parallel_size=4)
+        context = """Zorunlu stajlarını tamamladıkları halde tekrar staj yapmak isteyen öğrencilere,
+        Dekanlığın akademik dönem içerisinde belirlemiş olduğu şartları karşıladıkları 
+        takdirde, izin verilebilir. Mağduriyet yaşanmaması adına böyle bir talebi olacak öğrencinin öncelikle Dekanlık 
+        staj sorumlusu ile görüşüp durumu netleştirmesi ve ondan sonra girişimlerde bulunması gerekmektedir."""
 
-            # Define context and query
-            context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-            query_text = "Masamın üstünde ne var?"
+        question = "Zorunlu stajlarımı tamamladıktan sonra tekrar staj yapabilir miyim?"
 
-            print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
+        chat_prompt = """
+        [INST] 
+        Verilen bağlam üzerinden soruları yanıtlamak üzere tasarlanmış bir yapay zeka asistanısınız. Göreviniz:
+        1. Verilen bağlamı dikkatle okumak.
+        2. Soruyu yalnızca bağlamdaki bilgileri kullanarak yanıtlamak.
+        3. Eğer yanıt bağlamda bulunamıyorsa, "Bu soruyu verilen bağlama dayanarak yanıtlayamıyorum." şeklinde cevap vermek.
+        4. Kısa ve doğru yanıtlar sağlamak. 
+        [/INST]
+        """
 
-            params = SamplingParams(temperature=0.05, top_p=0.95, max_tokens=1024)
+        prompt = chat_prompt + f"\n\nQuestion: {question}\n\nDocument: {context}"
 
-            # Prepare the prompt with context and query
-            prompt = f"Sen verilen bağlama göre soruları türkçe cevaplayan bir dil modelisin.\n\nBağlam: {context_text}\nSoru: {query_text}\n"
-            output = llm.generate(prompt, params)
-            response_text = output[0].outputs[0].text
-            """
-            # Tokenize the input
-            inputs = tokenizer(prompt, return_tensors="pt")
+        completion = llm.generate(prompt, sampling_params)
+        # Extract and clean the output text
+        response_text = completion[0].outputs[0].text.strip()
 
-            # Ensure inputs are moved to GPU if available
-            if torch.cuda.is_available():
-                inputs = {key: value.cuda() for key, value in inputs.items()}
-
-            # Generate the answer
-            outputs = llm.generate(**inputs, max_new_tokens=256)
-            response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-            # Extract only the answer from the response text
-            start_index = response_text.find(query_text) + len(query_text)
-            response_text = response_text[start_index:].strip()
-
-            """
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        # Post-process to remove unnecessary parts
+        if "Answer:" in response_text:
+            response_text = response_text.split("Answer:")[1].strip()
 
     else:
         tokenizer = AutoTokenizer.from_pretrained(language_model)
