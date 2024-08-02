@@ -1,11 +1,11 @@
-from vllm import LLM, SamplingParams
+from vllm_trial import LLM, SamplingParams
 import torch
 
 def run_vllm():
     # Adjusted sampling parameters
     sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=500)
 
-    llm = LLM(trust_remote_code=True, model="mistralai/Mistral-7B-v0.3", dtype=torch.float16, tensor_parallel_size=4, max_model_len=20_000)
+    llm = LLM(trust_remote_code=True, model="mistralai/Mistral-7B-v0.3", dtype=torch.float16, tensor_parallel_size=4, max_model_len=10_000)
 
     context = """Zorunlu stajlarını tamamladıkları halde tekrar staj yapmak isteyen öğrencilere,
     Dekanlığın akademik dönem içerisinde belirlemiş olduğu şartları karşıladıkları 
