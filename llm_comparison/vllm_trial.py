@@ -1,5 +1,6 @@
 from vllm import LLM, SamplingParams
 import torch
+import time
 
 torch.cuda.empty_cache()
 
@@ -36,7 +37,12 @@ def run_vllm():
     if "Cevap:" in output_text:
         output_text = output_text.split("Cevap:")[1].split("Question:")[0].strip()
     
-    print("\nCevap:", output_text, "\n")
+    # Simulate streaming output
+    print("\nCevap: ", end="", flush=True)
+    for word in output_text.split():
+        print(word, end=" ", flush=True)
+        time.sleep(0.1)  # Adjust the delay as needed
+    print("\n")
 
 if __name__ == '__main__':
     run_vllm()
