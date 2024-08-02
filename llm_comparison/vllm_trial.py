@@ -32,9 +32,9 @@ def run_vllm():
     # Extract and clean the output text
     output_text = completion[0].outputs[0].text.strip()
 
-    # Post-process to extract only the "Cevap" part
+    # Post-process to extract only the relevant "Cevap" part
     if "Cevap:" in output_text:
-        output_text = output_text.split("Cevap:")[1].strip()
+        output_text = output_text.split("Cevap:")[1].split("Question:")[0].strip()
     
     print("\nCevap:", output_text, "\n")
 
