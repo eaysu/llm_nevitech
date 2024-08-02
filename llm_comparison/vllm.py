@@ -3,7 +3,7 @@ import torch
 
 def run_vllm():
     # Adjusted sampling parameters
-    sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=200)
+    sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=500)
 
     llm = LLM(trust_remote_code=True, model="mistralai/Mistral-7B-v0.3", dtype=torch.float16, tensor_parallel_size=4, max_model_len=20_000)
 
