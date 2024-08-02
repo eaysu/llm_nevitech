@@ -1,5 +1,7 @@
-from vllm_trial import LLM, SamplingParams
+from vllm import LLM, SamplingParams
 import torch
+
+torch.cuda.empty_cache()
 
 def run_vllm():
     # Adjusted sampling parameters
@@ -30,11 +32,11 @@ def run_vllm():
     # Extract and clean the output text
     output_text = completion[0].outputs[0].text.strip()
 
-    # Post-process to remove unnecessary parts
-    if "Answer:" in output_text:
-        output_text = output_text.split("Answer:")[1].strip()
-
-    print("\nCevap: ", output_text, "\n")
+    # Post-process to extract only the "Cevap" part
+    if "Cevap:" in output_text:
+        output_text = output_text.split("Cevap:")[1].strip()
+    
+    print("\nCevap:", output_text, "\n")
 
 if __name__ == '__main__':
     run_vllm()
