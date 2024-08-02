@@ -97,27 +97,7 @@ def query_rag(query_text: str, language_model: str):
 
     if language_model in ollama_language_models:
         model = Ollama(model=language_model)
-        response_text = model.invoke(prompt)
-
-    elif language_model == "curiositytech/MARS":
-        tokenizer = AutoTokenizer.from_pretrained(language_model)
-        model = AutoModelForCausalLM.from_pretrained(language_model, torch_dtype=torch.bfloat16, device_map="auto",)
-        messages = [
-            {"role": "system", "content": f"Verilen bağlama göre soruyu cevaplayınız: {context_text}"},
-            {"role": "user", "content": f"{query_text}"},
-        ]
-        input_ids = tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt").to(model.device)
-        terminators = [tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|eot_id|>")]
-        outputs = model.generate(
-            input_ids,
-            max_new_tokens=256,
-            eos_token_id=terminators,
-            do_sample=True,
-            temperature=0.6,
-            top_p=0.9,
-        )
-        response = outputs[0][input_ids.shape[-1]:]
-        response_text = tokenizer.decode(response, skip_special_tokens=True)    
+        response_text = model.invoke(prompt)  
 
     elif language_model == "mistralai/Mistral-7B-v0.3":
         sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=200)
