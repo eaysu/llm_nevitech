@@ -8,7 +8,7 @@ import deepspeed
 
 def run_nemo():
     # Authenticate with Hugging Face
-    login(token="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")
+    login(token="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")
 
     # Initialize the accelerator
     accelerator = Accelerator()
@@ -21,8 +21,7 @@ def run_nemo():
 
     # Configure DeepSpeed for multi-GPU inference
     ds_config = {
-        "train_micro_batch_size_per_gpu": 1,
-        "gradient_accumulation_steps": 1,
+        "train_batch_size": 1,
         "fp16": {
             "enabled": True
         },
@@ -35,15 +34,26 @@ def run_nemo():
             "offload_param": {
                 "device": "cpu",
                 "pin_memory": True
-            }
-        }
+            },
+            "overlap_comm": True,
+            "contiguous_gradients": True,
+            "reduce_bucket_size": 5e7, # 50MB
+            "stage3_param_persistence_threshold": 1e5, # 100KB
+        },
+        "steps_per_print": 2000,
+        "gradient_clipping": 1.0,
+        "wall_clock_breakdown": False
     }
 
     model = deepspeed.initialize(model=model, config=ds_config)[0]
 
     # Define context and query
-    context_text = "Masamın üstünde bir suluk, bir bilgisayar ve iki kalem var."
-    query_text = "Masamın üstünde ne var?"
+    context_text = """Zorunlu stajlarını tamamladıkları halde tekrar staj yapmak isteyen öğrencilere,
+    Dekanlığın akademik dönem içerisinde belirlemiş olduğu şartları karşıladıkları 
+    takdirde, izin verilebilir. Mağduriyet yaşanmaması adına böyle bir talebi olacak öğrencinin öncelikle Dekanlık 
+    staj sorumlusu ile görüşüp durumu netleştirmesi ve ondan sonra girişimlerde bulunması gerekmektedir."""
+
+    query_text = "Zorunlu stajlarımı tamamladıktan sonra tekrar staj yapabilir miyim?"
 
     print(f"context text: {context_text}\n\nquery text: {query_text}\n\n")
 
