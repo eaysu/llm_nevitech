@@ -2,6 +2,11 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import deepspeed
 import torch
 
+# Ensure you have deepspeed installed with pip install deepspeed
+from deepspeed import PipelineModule
+from deepspeed.pipe import LayerSpec
+from accelerate import Accelerator
+
 torch.cuda.empty_cache()
 
 accelerator = Accelerator()
@@ -12,10 +17,10 @@ def run_deepspeed():
     tokenizer = AutoTokenizer.from_pretrained(language_model)
     model = AutoModelForCausalLM.from_pretrained(language_model)
 
-    # Initialize DeepSpeed inference engine
-    ds_model = deepspeed.init_inference(
+    # Initialize DeepSpeed inference engine with model parallelism
+    ds_engine = deepspeed.init_inference(
         model=model,         # Transformers model
-        mp_size=1,           # Number of GPUs
+        mp_size=torch.cuda.device_count(),  # Number of GPUs
         dtype=torch.half,    # dtype of the weights (fp16)
         replace_method="auto", # Let DeepSpeed automatically identify the layer to replace
         replace_with_kernel_inject=True, # Replace the model with the kernel injector
@@ -23,7 +28,7 @@ def run_deepspeed():
     )
 
     # Create a text-generation pipeline with DeepSpeed model
-    ds_clf = pipeline("text-generation", model=ds_model.module, tokenizer=tokenizer, device=0)
+    ds_clf = pipeline("text-generation", model=ds_engine.module, tokenizer=tokenizer, device=0)
 
     context = """Zorunlu stajlarını tamamladıkları halde tekrar staj yapmak isteyen öğrencilere,
     Dekanlığın akademik dönem içerisinde belirlemiş olduğu şartları karşıladıkları 
@@ -54,5 +59,4 @@ def ask_question(ds_clf, context_text, query_text):
     return answer
 
 if __name__ == '__main__':
-    run_deepspeed()
-
+    print(f"\nYANIT: {run_deepspeed()}\n")
