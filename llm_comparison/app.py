@@ -23,6 +23,7 @@ LANGUAGE_MODELS = {
     'llama3:70b': 'llama3:70b',
     'qwen2:72b': 'qwen2:72b',
     'mixtral:8x7b': 'mixtral:8x7b',
+    'mistral-nemo:12b': 'mistral-nemo:12b',
     'curiositytech/MARS': 'curiositytech/MARS',
     'Orbina/Orbita-v0.1': 'Orbina/Orbita-v0.1',
     'Eurdem/Defne_llama3_2x8B': 'Eurdem/Defne_llama3_2x8B',

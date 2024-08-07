@@ -12,7 +12,7 @@ from vllm_trial import LLM, SamplingParams
 
 from get_embedding_function import get_embedding_function
 
-ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b", "mixtral:8x7b"]
+ollama_language_models = ["mistral", "llama3", "gemma2", "qwen2:7b", "llama3:27b", "gemma2:70b", "qwen2:72b", "mixtral:8x7b", "mistral-nemo:12b"]
 
 CHROMA_PATH = "chroma"
 
